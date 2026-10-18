@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Rot Quiz</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+        
+        .front-page {
+            width: 100%;
+            height: 100vh;
+            background-image: url('brainrot.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .front-page::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .hero-text-container {
+            padding: 20px;
+            max-width: 80%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .glitch-text {
+            font-size: 3.5rem;
+            color: #fff;
+            text-shadow: 3px 3px 0px #38bdf8, -3px -3px 0px #0284c7;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle-text {
+            font-size: 1.5rem;
+            color: #e2e8f0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-family: Arial, sans-serif;
+            margin-bottom: 30px;
+        }
+
+        #start-btn {
+            background-color: #38bdf8;
+            color: white;
+            font-size: 1.8rem;
+            padding: 15px 40px;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Impact', sans-serif;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            transition: transform 0.1s ease;
+        }
+
+        #start-btn:hover {
+            background-color: #fff;
+            color: #0369a1;
+            transform: scale(1.05);
+        }
+
+        .quiz-box {
+            position: relative;
+            z-index: 5;
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+            padding: 30px;
+            max-width: 550px;
+            margin: 80px auto;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #38bdf8;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .game-status {
+            display: flex;
+            justify-content: space-between;
+            font-family: Arial, sans-serif;
+            margin-bottom: 20px;
+            color: #38bdf8;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        #quiz-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            margin: 0 auto 20px auto;
+            border-radius: 12px;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .choices-grid button {
+            padding: 14px 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            background-color: #ffffff;
+            color: #0f172a;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: all 0.15s ease;
+        }
+
+        .choices-grid button:hover {
+            background-color: #38bdf8;
+            color: #ffffff;
+        }
+
+        .snow-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
+            100% { transform: translateY(110vh) translateX(20px); opacity: 0.3; }
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -5vh;
+            animation: fall linear infinite;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="snow-container" id="snow-layer"></div>
+    <div id="start-screen" class="front-page">
+        <div class="hero-text-container">
+            <h1 class="glitch-text">❄️ SNOWGLOBE BRAIN ROT QUIZ ❄️</h1>
+            <p class="subtitle-text">Do you have ultimate rizz? 🔥</p>
+            <p style="color: #cbd5e1; font-family: Arial; margin-bottom: 20px;">click below to find out!</p>
+            <button id="start-btn" onclick="startGame()">START QUIZ</button>
+        </div>
+    </div>
+    <div id="quiz-container" class="quiz-box hidden">
+        <div class="game-status">
+            <span id="progress">Question 1 of 4</span>
+            <span id="score">Score: 0</span>
+        </div>
+        <div id="quiz-card">
+            <img id="quiz-image" src="" alt="Meme Question">
+            <div id="choices-container" class="choices-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const snowLayer = document.getElementById("snow-layer");
+        for (let i = 0; i < 40; i++) {
+            const flake = document.createElement("div");
+            flake.className = "snowflake";
+            flake.textContent = Math.random() > 0.5 ? "❄️" : "•";
+            flake.style.left = Math.random() * 100 + "vw";
+            flake.style.animationDuration = (Math.random() * 3 + 4) + "s";
+            flake.style.animationDelay = (Math.random() * 5) + "s";
+            flake.style.fontSize = (Math.random() * 10 + 10) + "px";
+            snowLayer.appendChild(flake);
+        }
+
+        const quizData = [
+            {
+                image: "skibidi.jpg",
+                choices: ["ballarinia cappuccina", "Skibidi Toilet", "Cameraman", "fanum tax"],
+                correct: "Skibidi Toilet"
+            },
+            {
+                image: "grimace.jpg",
+                choices: ["Grimace Shake", "Lirilì Larilà", "chimpanzini", "bananini"],
+                correct: "Grimace Shake"
+            },
+            {
+                image: "tralalero.jpg",
+                choices: ["Brr Brr Patapim", "Gigachad", "Tralalero", "tun tun sahur"],
+                correct: "Tralalero"
+            },
+            {
+                image: "backround.png.jpg",
+                choices: ["Bombardiro Crocodilo ", "Gigachad", "Tralalero", "pretty shrek"],
+                correct: "pretty shrek"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const startScreen = document.getElementById("start-screen");
+        const quizContainer = document.getElementById("quiz-container");
+        const progressElement = document.getElementById("progress");
+        const scoreElement = document.getElementById("score");
+        const quizCard = document.getElementById("quiz-card");
+        const quizImage = document.getElementById("quiz-image");
+
+        function startGame() {
+            startScreen.classList.add("hidden");
+            quizContainer.classList.remove("hidden");
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const choicesContainer = document.getElementById("choices-container");
+            choicesContainer.innerHTML = "";
+
+            if (currentQuestionIndex >= quizData.length) {
+                showEndScreen();
+                return;
+            }
+
+            const currentData = quizData[currentQuestionIndex];
+            progressElement.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            scoreElement.textContent = `Score: ${score}`;
+            quizImage.src = currentData.image;
+
+            currentData.choices.forEach(choice => {
+                const button = document.createElement("button");
+                button.textContent = choice;
+                button.addEventListener("click", () => checkAnswer(choice));
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedChoice) {
+            const correctAnswer = quizData[currentQuestionIndex].correct;
+
+            if (selectedChoice === correctAnswer) {
+                score += 10;
+                alert("Correct! 🎉");
+            } else {
+                alert(`Incorrect! The correct answer was: ${correctAnswer} ❄️`);
+            }
+
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showEndScreen() {
+            quizCard.innerHTML = `
+                <h2 style="color: #fff; font-size: 2.5rem; font-family: 'Impact';">QUIZ COMPLETE! 👑</h2>
+                <p style="color: #fff; font-size: 1.5rem; font-family: Arial;">Your final score is: ${score} points!</p>
+                <button onclick="location.reload()" style="background-color: #00ffaa; color: #000; padding: 15px 30px; font-size: 1.5rem; border: none; cursor: pointer; font-family: 'Impact'; border-radius: 8px;">TRY AGAIN</button>
+            `;
+        }
+    </script>
+</body>
+</html>
